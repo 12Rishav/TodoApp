@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
-const { insertOrUpdateUser, getUserByEmail, getUserByEmailAndToken } = require('../models/auth');
+const { insertUser, updateUser, getUserByEmail, getUserByEmailAndToken } = require('../models/auth');
 const { sendMagicLink } = require('./mailer');
+const constant=require('../constant/constant')
+const CustomError = require('../utils/CustomError');
 
 const generateToken = (email) => {
     return jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -8,7 +10,14 @@ const generateToken = (email) => {
 
 const register = async (email) => {
     const token = generateToken(email);
-    await insertOrUpdateUser(email, token);
+    await insertUser(email, token);
+    await sendMagicLink(email, token);
+    return true;
+};
+
+const login = async (email) => {
+    const token = generateToken(email);
+    await updateUser(email, token); 
     await sendMagicLink(email, token);
     return true;
 };
@@ -22,7 +31,7 @@ const verifyToken = async (token) => {
         }
         return null;
     } catch (error) {
-        return null;
+        throw new CustomError(403, constant.ERROR.FORBIDDEN);
     }
 };
 
@@ -31,4 +40,4 @@ const checkEmail = async (email) => {
     return rows;
 };
 
-module.exports = { register, verifyToken, checkEmail };
+module.exports = { register, verifyToken, checkEmail, login };

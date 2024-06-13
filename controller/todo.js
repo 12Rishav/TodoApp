@@ -1,6 +1,7 @@
 
 const { getTodos, createTodo, updateTodo, deleteTodo } = require('../models/todo');
 const CustomError = require('../utils/CustomError');
+const constant=require('../constant/constant')
 const listTodos = async (req, res, next) => {
     try {
         const userId = req.user.userId;
@@ -33,7 +34,7 @@ const editTodo = async (req, res,next) => {
     try {
         const { todoId } = req.params;
         if (!todoId) {
-            throw new CustomError(400, 'Todo ID is required.');
+            throw new CustomError(400, constant.ERROR.ID_REQUIRED);
         }
         const { title, description, completed } = req.body;
         const todo = await updateTodo(todoId, title, description, completed);
@@ -50,15 +51,15 @@ const removeTodo = async (req, res,next) => {
     try {
         const { todoId } = req.params;
         if (!todoId) {
-            throw new CustomError(400, 'Todo ID is required.');
+            throw new CustomError(400, constant.ERROR.ID_REQUIRED);
         }
         const deleteResult = await deleteTodo(todoId);
         if (!deleteResult) {
-            throw new CustomError(404, 'Todo item not found.');
+            throw new CustomError(404, constant.ERROR.ITEM_NOT_FOUND);
         }
         return res.status(200).json({
             code: 200,
-            message:"Todo deleted ",
+            message:constant.SUCCESS.DELETD,
         });
     } catch (error) {
         next(error);
